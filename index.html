@@ -1,0 +1,2757 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f9fafb;
+        }
+        .sidebar {
+            width: 260px;
+            transition: all 0.3s;
+        }
+        .main-content {
+            margin-left: 260px;
+            transition: all 0.3s;
+        }
+        .sidebar.collapsed {
+            width: 70px;
+        }
+        .main-content.expanded {
+            margin-left: 70px;
+        }
+        .nav-item:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .nav-item.active {
+            background-color: rgba(255, 255, 255, 0.2);
+            border-left: 4px solid #ffffff;
+        }
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            padding: 8px 12px;
+            text-align: left;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .invoice-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .invoice-body {
+            margin-bottom: 30px;
+        }
+        .invoice-table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        .invoice-footer {
+            margin-top: 30px;
+            border-top: 2px solid #e5e7eb;
+            padding-top: 20px;
+        }
+        .company-logo {
+            color: #dc2626;
+            font-weight: bold;
+            font-size: 2rem;
+        }
+        .form-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-area, .print-area * {
+                visibility: visible;
+            }
+            .print-area {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .no-print {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="flex h-screen bg-gray-100">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar bg-gray-800 text-white h-full fixed">
+            <div class="p-4 flex justify-between items-center">
+                <span class="text-xl font-bold" id="full-title">Business Manager</span>
+                <span class="text-xl font-bold hidden" id="short-title">BM</span>
+                <button id="toggle-sidebar" class="text-white focus:outline-none">
+                    <i class="bi bi-list text-xl"></i>
+                </button>
+            </div>
+            <hr class="border-gray-700">
+            <nav class="mt-4">
+                <ul>
+                    <li class="nav-item active py-3 px-4 flex items-center cursor-pointer" data-page="dashboard">
+                        <i class="bi bi-speedometer2 text-xl mr-3"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </li>
+                    <li class="nav-item py-3 px-4 flex items-center cursor-pointer" data-page="customers">
+                        <i class="bi bi-people text-xl mr-3"></i>
+                        <span class="nav-text">Customer Management</span>
+                    </li>
+                    <li class="nav-item py-3 px-4 flex items-center cursor-pointer" data-page="invoices">
+                        <i class="bi bi-receipt text-xl mr-3"></i>
+                        <span class="nav-text">Invoice Management</span>
+                    </li>
+                    <li class="nav-item py-3 px-4 flex items-center cursor-pointer" data-page="products">
+                        <i class="bi bi-box text-xl mr-3"></i>
+                        <span class="nav-text">Product Management</span>
+                    </li>
+                    <li class="nav-item py-3 px-4 flex items-center cursor-pointer" data-page="purchases">
+                        <i class="bi bi-cart text-xl mr-3"></i>
+                        <span class="nav-text">Purchase Management</span>
+                    </li>
+                    <li class="nav-item py-3 px-4 flex items-center cursor-pointer" data-page="expenses">
+                        <i class="bi bi-cash text-xl mr-3"></i>
+                        <span class="nav-text">Expense Management</span>
+                    </li>
+                    <li class="nav-item py-3 px-4 flex items-center cursor-pointer" data-page="settings">
+                        <i class="bi bi-gear text-xl mr-3"></i>
+                        <span class="nav-text">Settings</span>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div id="main-content" class="main-content w-full">
+            <!-- Top Bar -->
+            <div class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
+                <h1 id="page-title" class="text-2xl font-semibold">Dashboard</h1>
+                <div class="flex items-center space-x-4">
+                    <button class="bg-gray-200 p-2 rounded-full">
+                        <i class="bi bi-bell"></i>
+                    </button>
+                    <div class="flex items-center">
+                        <span class="mr-2">Admin</span>
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=80&q=80" 
+                             class="w-8 h-8 rounded-full" alt="Profile">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content -->
+            <div class="p-6">
+                <!-- Dashboard Page -->
+                <div id="dashboard-page" class="page-content">
+                    <!-- Quick Action Buttons -->
+                    <div class="flex flex-wrap gap-4 mb-6">
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="showPage('invoices'); document.getElementById('create-invoice-form').classList.remove('hidden');">
+                            <i class="bi bi-plus-circle mr-2"></i> Create Invoice
+                        </button>
+                        <button class="bg-green-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="showPage('expenses'); document.getElementById('add-expense-form').classList.remove('hidden');">
+                            <i class="bi bi-plus-circle mr-2"></i> Add Expense
+                        </button>
+                        <button class="bg-purple-600 text-white px-4 py-2 rounded-lg flex items-center" onclick="showPage('purchases'); document.getElementById('add-purchase-form').classList.remove('hidden');">
+                            <i class="bi bi-plus-circle mr-2"></i> Add Purchase
+                        </button>
+                    </div>
+
+                    <!-- Dashboard Summary Cards -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-500 text-sm">Total Sales</h3>
+                                <div class="bg-blue-100 p-2 rounded-full">
+                                    <i class="bi bi-graph-up text-blue-600"></i>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-semibold">₹0.00</p>
+                            <p class="text-sm text-green-500 flex items-center mt-2">
+                                <i class="bi bi-arrow-up-short"></i> 0% from last month
+                            </p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-500 text-sm">Total Expenses</h3>
+                                <div class="bg-red-100 p-2 rounded-full">
+                                    <i class="bi bi-cash-stack text-red-600"></i>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-semibold">₹0.00</p>
+                            <p class="text-sm text-red-500 flex items-center mt-2">
+                                <i class="bi bi-arrow-up-short"></i> 0% from last month
+                            </p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-500 text-sm">Total Purchases</h3>
+                                <div class="bg-purple-100 p-2 rounded-full">
+                                    <i class="bi bi-cart text-purple-600"></i>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-semibold">₹0.00</p>
+                            <p class="text-sm text-purple-500 flex items-center mt-2">
+                                <i class="bi bi-arrow-up-short"></i> 0% from last month
+                            </p>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-gray-500 text-sm">Net Profit</h3>
+                                <div class="bg-green-100 p-2 rounded-full">
+                                    <i class="bi bi-currency-rupee text-green-600"></i>
+                                </div>
+                            </div>
+                            <p class="text-2xl font-semibold">₹0.00</p>
+                            <p class="text-sm text-green-500 flex items-center mt-2">
+                                <i class="bi bi-arrow-up-short"></i> 0% from last month
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Sales Overview</h3>
+                            <canvas id="salesChart" height="250"></canvas>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <h3 class="text-lg font-semibold mb-4">Top Customers</h3>
+                            <div class="text-center text-gray-500 py-8">
+                                <i class="bi bi-people text-4xl mb-2"></i>
+                                <p>No customer data available yet.</p>
+                                <button class="text-blue-600 mt-2" onclick="showPage('customers')">Add customers</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity Tables -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">Recent Invoices</h3>
+                                <button class="text-blue-600 hover:underline text-sm" onclick="showPage('invoices')">View All</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="py-3 px-4 text-left">Invoice #</th>
+                                            <th class="py-3 px-4 text-left">Customer</th>
+                                            <th class="py-3 px-4 text-left">Date</th>
+                                            <th class="py-3 px-4 text-left">Amount</th>
+                                            <th class="py-3 px-4 text-left">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-gray-500">No invoices available yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-lg shadow-md">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-lg font-semibold">Pending Payments</h3>
+                                <button class="text-blue-600 hover:underline text-sm" onclick="showPage('invoices')">View All</button>
+                            </div>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="py-3 px-4 text-left">Customer</th>
+                                            <th class="py-3 px-4 text-left">Invoice #</th>
+                                            <th class="py-3 px-4 text-left">Due Date</th>
+                                            <th class="py-3 px-4 text-left">Amount</th>
+                                            <th class="py-3 px-4 text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td colspan="5" class="text-center py-4 text-gray-500">No pending payments.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customers Page -->
+                <div id="customers-page" class="page-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Customer Management</h2>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" id="add-customer-btn">
+                            <i class="bi bi-plus-circle mr-2"></i> Add New Customer
+                        </button>
+                    </div>
+
+                    <!-- Add Customer Form -->
+                    <div id="add-customer-form" class="bg-white p-6 rounded-lg shadow-md mb-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Add New Customer</h3>
+                            <button class="text-gray-500" id="close-customer-form">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="customer-name">
+                                    Customer Name*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="customer-name" type="text" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="contact-person">
+                                    Contact Person
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="contact-person" type="text">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="gstin">
+                                    GSTIN
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="gstin" type="text">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="cosmetic-license">
+                                    Cosmetic License No.
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="cosmetic-license" type="text">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="email">
+                                    Email
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="email" type="email">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="phone">
+                                    Phone Number*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="phone" type="text" required>
+                            </div>
+                            <div class="mb-4 md:col-span-2">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="billing-address">
+                                    Billing Address*
+                                </label>
+                                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                          id="billing-address" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-4 md:col-span-2">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="shipping-address">
+                                    Shipping Address
+                                </label>
+                                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                          id="shipping-address" rows="3"></textarea>
+                                <div class="mt-2">
+                                    <input type="checkbox" id="same-as-billing" class="mr-2">
+                                    <label for="same-as-billing" class="text-sm">Same as billing address</label>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="state">
+                                    State*
+                                </label>
+                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                        id="state" required>
+                                    <option value="">Select State</option>
+                                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                                    <option value="Maharashtra">Maharashtra</option>
+                                    <!-- Add more states -->
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="state-code">
+                                    State Code
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline bg-gray-100" 
+                                       id="state-code" type="text" readonly>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded" id="cancel-customer">
+                                Cancel
+                            </button>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" id="save-customer">
+                                Save Customer
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Customer List -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="mb-4 flex justify-between items-center">
+                            <div class="relative">
+                                <input type="text" placeholder="Search customers..." class="pl-10 pr-3 py-2 border rounded-lg">
+                                <i class="bi bi-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div>
+                                <select class="border rounded-lg px-3 py-2">
+                                    <option>All Customers</option>
+                                    <option>Active</option>
+                                    <option>Inactive</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-3 px-4 text-left">Name</th>
+                                        <th class="py-3 px-4 text-left">Email</th>
+                                        <th class="py-3 px-4 text-left">Phone</th>
+                                        <th class="py-3 px-4 text-left">GSTIN</th>
+                                        <th class="py-3 px-4 text-left">Outstanding</th>
+                                        <th class="py-3 px-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="customer-list">
+                                    <tr>
+                                        <td colspan="6" class="text-center py-4 text-gray-500">No customers added yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Invoices Page -->
+                <div id="invoices-page" class="page-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Invoice Management</h2>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" id="create-invoice-btn">
+                            <i class="bi bi-plus-circle mr-2"></i> Create Invoice
+                        </button>
+                    </div>
+
+                    <!-- Create Invoice Form -->
+                    <div id="create-invoice-form" class="bg-white p-6 rounded-lg shadow-md mb-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Create New Invoice</h3>
+                            <button class="text-gray-500" id="close-invoice-form">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <!-- Seller Information -->
+                            <div class="border-b pb-4 md:border-b-0 md:border-r md:pr-4">
+                                <h4 class="font-semibold mb-2">Seller Information</h4>
+                                <div class="company-logo mb-2">CiS</div>
+                                <p class="text-sm">CIS SOLUTIONS</p>
+                                <p class="text-sm">1187, Shree Krushna Nagar, Mauli Street,</p>
+                                <p class="text-sm">Ambarnath, Thane - 421501</p>
+                                <p class="text-sm mt-2">GSTIN/UIN: 27ALLPD1172E1ZF</p>
+                                <p class="text-sm">E-Mail: cis2.solutions@gmail.com</p>
+                                <p class="text-sm">State: Maharashtra, Code: 27</p>
+                            </div>
+
+                            <!-- Buyer Information -->
+                            <div class="border-b pb-4 md:border-b-0 md:border-r md:px-4 md:col-span-2">
+                                <h4 class="font-semibold mb-2">Buyer Information</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div class="mb-2">
+                                        <label class="block text-gray-700 text-sm mb-1">
+                                            Select Customer*
+                                        </label>
+                                        <select class="border w-full py-2 px-3 rounded" id="customer-select">
+                                            <option value="">Select a customer</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="block text-gray-700 text-sm mb-1">
+                                            GSTIN
+                                        </label>
+                                        <input type="text" id="invoice-gstin" class="border w-full py-2 px-3 rounded bg-gray-100" readonly>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Billing Address*
+                                    </label>
+                                    <textarea id="invoice-address" class="border w-full py-2 px-3 rounded bg-gray-100" readonly rows="2"></textarea>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div class="mb-2">
+                                        <label class="block text-gray-700 text-sm mb-1">
+                                            State
+                                        </label>
+                                        <input type="text" id="invoice-state" class="border w-full py-2 px-3 rounded bg-gray-100" readonly>
+                                    </div>
+                                    <div class="mb-2">
+                                        <label class="block text-gray-700 text-sm mb-1">
+                                            State Code
+                                        </label>
+                                        <input type="text" id="invoice-state-code" class="border w-full py-2 px-3 rounded bg-gray-100" readonly>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Invoice Details -->
+                            <div class="md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Invoice No.*
+                                    </label>
+                                    <input type="text" id="invoice-number" class="border w-full py-2 px-3 rounded" value="CIS/25-26/104">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Date*
+                                    </label>
+                                    <input type="date" id="invoice-date" class="border w-full py-2 px-3 rounded">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Mode/Terms of Payment
+                                    </label>
+                                    <input type="text" id="invoice-payment-mode" class="border w-full py-2 px-3 rounded" value="Net 30">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Buyer's Order No.
+                                    </label>
+                                    <input type="text" id="invoice-po-number" class="border w-full py-2 px-3 rounded" placeholder="e.g., Verbal">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Order Date
+                                    </label>
+                                    <input type="date" id="invoice-po-date" class="border w-full py-2 px-3 rounded">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        Dispatch Document No.
+                                    </label>
+                                    <input type="text" id="invoice-dispatch-no" class="border w-full py-2 px-3 rounded">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Product Table -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3">Product/Service Details</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="py-2 px-4 border text-left">#</th>
+                                            <th class="py-2 px-4 border text-left">Description of Goods</th>
+                                            <th class="py-2 px-4 border text-left">HSN/SAC</th>
+                                            <th class="py-2 px-4 border text-left">Quantity</th>
+                                            <th class="py-2 px-4 border text-left">Rate</th>
+                                            <th class="py-2 px-4 border text-left">Per</th>
+                                            <th class="py-2 px-4 border text-left">Disc %</th>
+                                            <th class="py-2 px-4 border text-left">Amount</th>
+                                            <th class="py-2 px-4 border text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="invoice-items">
+                                        <tr id="item-row-1">
+                                            <td class="py-2 px-4 border">1</td>
+                                            <td class="py-2 px-4 border">
+                                                <select id="product-1" class="w-full border rounded py-1 px-2 product-select">
+                                                    <option value="">Select Product</option>
+                                                    <option value="courier" selected>Courier Charges</option>
+                                                </select>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="text" id="hsn-1" class="w-full border rounded py-1 px-2" value="90271000" readonly>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="qty-1" class="w-full border rounded py-1 px-2 item-qty" value="1" min="1">
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="rate-1" class="w-full border rounded py-1 px-2 item-rate" value="5000.00" step="0.01">
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="text" id="per-1" class="w-full border rounded py-1 px-2" value="Nos">
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="disc-1" class="w-full border rounded py-1 px-2 item-disc" value="0" min="0" max="100">
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="amount-1" class="w-full bg-gray-100 rounded py-1 px-2 item-amount" value="5000.00" readonly>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <button class="text-red-500 delete-item-btn" data-row="1"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button class="mt-3 px-3 py-1 bg-gray-200 rounded-lg text-sm" id="add-item-row">
+                                <i class="bi bi-plus-circle"></i> Add Item
+                            </button>
+                        </div>
+
+                        <!-- Tax and Total Section -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <!-- Tax Details -->
+                            <div>
+                                <h4 class="font-semibold mb-3">GST Details</h4>
+                                <div class="border rounded p-4">
+                                    <label class="block text-gray-700 text-sm mb-1">
+                                        GST Rate
+                                    </label>
+                                    <select id="gst-rate" class="w-full border rounded py-2 px-3 mb-2">
+                                        <option value="5">5%</option>
+                                        <option value="9+9">9+9% (CGST + SGST)</option>
+                                        <option value="18" selected>18%</option>
+                                        <option value="28">28%</option>
+                                    </select>
+                                    <div class="grid grid-cols-2 gap-2 mt-3">
+                                        <div id="cgst-container" class="hidden">
+                                            <label class="block text-gray-700 text-sm mb-1">CGST</label>
+                                            <input type="text" id="cgst-amount" class="w-full border rounded py-1 px-2 bg-gray-100" readonly>
+                                        </div>
+                                        <div id="sgst-container" class="hidden">
+                                            <label class="block text-gray-700 text-sm mb-1">SGST</label>
+                                            <input type="text" id="sgst-amount" class="w-full border rounded py-1 px-2 bg-gray-100" readonly>
+                                        </div>
+                                        <div id="igst-container">
+                                            <label class="block text-gray-700 text-sm mb-1">IGST</label>
+                                            <input type="text" id="igst-amount" class="w-full border rounded py-1 px-2 bg-gray-100" value="900.00" readonly>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Totals -->
+                            <div>
+                                <h4 class="font-semibold mb-3">Invoice Totals</h4>
+                                <div class="border rounded p-4">
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <label class="text-gray-700">Subtotal:</label>
+                                        <input type="text" id="subtotal" class="w-full border rounded py-1 px-2 bg-gray-100 text-right" value="5,000.00" readonly>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <label class="text-gray-700">Tax Amount:</label>
+                                        <input type="text" id="tax-total" class="w-full border rounded py-1 px-2 bg-gray-100 text-right" value="900.00" readonly>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <label class="text-gray-700">Rounding:</label>
+                                        <input type="text" id="rounding" class="w-full border rounded py-1 px-2 text-right" value="0.00">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 pt-2 border-t mt-2">
+                                        <label class="text-gray-700 font-bold">Grand Total:</label>
+                                        <input type="text" id="grand-total" class="w-full border rounded py-1 px-2 bg-gray-100 text-right font-bold" value="5,900.00" readonly>
+                                    </div>
+                                    <div class="mt-2">
+                                        <label class="text-gray-700 text-sm">Amount in Words:</label>
+                                        <div id="amount-in-words" class="border rounded py-2 px-3 bg-gray-100 mt-1">Five Thousand Nine Hundred Only</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Bank Details -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <h4 class="font-semibold mb-3">Bank Details</h4>
+                                <div class="border rounded p-4">
+                                    <div class="mb-3">
+                                        <label class="block text-gray-700 text-sm mb-1">
+                                            Select Bank
+                                        </label>
+                                        <select id="bank-select" class="w-full border rounded py-2 px-3">
+                                            <option value="abhudaya" selected>Abhudaya Co Op Bank</option>
+                                        </select>
+                                    </div>
+                                    <table class="w-full text-sm">
+                                        <tr>
+                                            <td class="py-1">Bank Name:</td>
+                                            <td class="py-1 font-semibold">Abhudaya Co Op Bank</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-1">A/c No.:</td>
+                                            <td class="py-1 font-semibold">107021100000620</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="py-1">Branch & IFSC:</td>
+                                            <td class="py-1 font-semibold">ABHY0065066</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-semibold mb-3">Declaration</h4>
+                                <div class="border rounded p-4">
+                                    <p class="text-sm">We declare that this invoice shows the actual price of the Services/goods described and that all particulars are true and correct.</p>
+                                    <div class="mt-4 text-right">
+                                        <p class="text-sm mb-2">For CIS Solutions</p>
+                                        <div class="h-10 border-b border-dashed border-gray-400 mb-2"></div>
+                                        <p class="text-sm">Authorised Signatory</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="flex justify-end gap-3 mt-6">
+                            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded-lg" id="cancel-invoice">
+                                Cancel
+                            </button>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg" id="save-invoice">
+                                Save Invoice
+                            </button>
+                            <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg" id="preview-invoice">
+                                <i class="bi bi-eye mr-2"></i> Preview
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Invoice Preview Modal -->
+                    <div id="invoice-preview-modal" class="fixed inset-0 z-50 overflow-auto bg-black bg-opacity-50 hidden flex items-center justify-center p-4">
+                        <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl max-h-screen overflow-y-auto">
+                            <div class="p-4 border-b flex justify-between items-center">
+                                <h3 class="text-lg font-bold">Invoice Preview</h3>
+                                <div class="flex gap-2">
+                                    <button class="bg-blue-600 text-white px-3 py-1 rounded" id="export-pdf">
+                                        <i class="bi bi-file-pdf mr-1"></i> Export PDF
+                                    </button>
+                                    <button class="text-gray-500" id="close-preview">
+                                        <i class="bi bi-x-lg"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="p-6 print-area">
+                                <div class="invoice-container">
+                                    <div class="text-center font-bold text-xl mb-4">Tax Invoice</div>
+                                    <div class="invoice-header">
+                                        <div class="w-1/2">
+                                            <div class="company-logo">CiS</div>
+                                            <div class="font-bold">CIS SOLUTIONS</div>
+                                            <div class="text-sm">1187, Shree Krushna Nagar, Mauli Street,</div>
+                                            <div class="text-sm">Ambarnath, Thane - 421501</div>
+                                            <div class="text-sm mt-1">GSTIN/UIN: 27ALLPD1172E1ZF</div>
+                                            <div class="text-sm">State Name: Maharashtra, Code: 27</div>
+                                            <div class="text-sm">E-Mail: cis2.solutions@gmail.com</div>
+                                        </div>
+                                        <div class="w-1/2">
+                                            <table class="w-full text-sm">
+                                                <tr>
+                                                    <td class="border p-2">Invoice No.</td>
+                                                    <td class="border p-2">CIS/25-26/104</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2">Dated</td>
+                                                    <td class="border p-2">7-Apr-25</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2">Delivery Note</td>
+                                                    <td class="border p-2">CIS104</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2">Mode/Terms of Payment</td>
+                                                    <td class="border p-2">Net 30</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2">Supplier's Ref.</td>
+                                                    <td class="border p-2"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2">Other Reference(s)</td>
+                                                    <td class="border p-2"></td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="buyer-details border mb-4 p-2">
+                                        <div class="font-bold text-lg">BUYER DETAIL</div>
+                                        <div class="font-bold">BLUE FENCE SYSTEMS PVT. LTD.</div>
+                                        <div class="text-sm">Door No11 1/27 Revenue Ward 56 Lankelapalem</div>
+                                        <div class="text-sm">Anakapalli Visakhapatnam Andhra Pradesh 531019</div>
+                                        <div class="text-sm">India</div>
+                                        <div class="text-sm mt-2">GSTIN/UIN: 37AAECB2918H1ZR</div>
+                                        <div class="text-sm">State Name: Andhra Pradesh, Code: 37</div>
+                                        
+                                        <div class="grid grid-cols-2 gap-4 mt-2">
+                                            <div>
+                                                <table class="w-full text-sm">
+                                                    <tr>
+                                                        <td class="border p-2">Buyer's Order No.</td>
+                                                        <td class="border p-2">Verbal</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="border p-2">Dated</td>
+                                                        <td class="border p-2">07-04-2025</td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="border p-2">Dispatch Document No.</td>
+                                                        <td class="border p-2">Delivery Note Date</td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                            <div>
+                                                <table class="w-full text-sm">
+                                                    <tr>
+                                                        <td class="border p-2">Dispatch through</td>
+                                                        <td class="border p-2"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="border p-2">Destination</td>
+                                                        <td class="border p-2"></td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td class="border p-2">Terms of Delivery</td>
+                                                        <td class="border p-2"></td>
+                                                    </tr>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="invoice-body">
+                                        <table class="invoice-table w-full text-sm">
+                                            <thead>
+                                                <tr>
+                                                    <th class="border p-2 text-center">SI No.</th>
+                                                    <th class="border p-2">Description of Goods</th>
+                                                    <th class="border p-2 text-center">HSN/SAC</th>
+                                                    <th class="border p-2 text-center">Quantity</th>
+                                                    <th class="border p-2 text-center">Rate</th>
+                                                    <th class="border p-2 text-center">Per</th>
+                                                    <th class="border p-2 text-center">Disc %</th>
+                                                    <th class="border p-2 text-center">Amount</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td class="border p-2 text-center">1</td>
+                                                    <td class="border p-2">Courier Charges</td>
+                                                    <td class="border p-2 text-center">90271000</td>
+                                                    <td class="border p-2 text-center">1.00</td>
+                                                    <td class="border p-2 text-right">5000.00</td>
+                                                    <td class="border p-2 text-center">Nos</td>
+                                                    <td class="border p-2 text-center"></td>
+                                                    <td class="border p-2 text-right">5,000.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2" colspan="4"></td>
+                                                    <td class="border p-2 text-right" colspan="3">IGST 18%</td>
+                                                    <td class="border p-2 text-right">900.00</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2" colspan="4"></td>
+                                                    <td class="border p-2 text-right" colspan="3">Rounded off</td>
+                                                    <td class="border p-2 text-right">-</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="border p-2" colspan="4"></td>
+                                                    <td class="border p-2 text-right font-bold" colspan="3">Total</td>
+                                                    <td class="border p-2 text-right font-bold">5,900.00</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                        
+                                        <div class="text-right mt-2 text-sm">E & O.E.</div>
+                                        
+                                        <table class="invoice-table w-full text-sm mt-4">
+                                            <tr>
+                                                <th class="border p-2" rowspan="2">HSN/SAC</th>
+                                                <th class="border p-2" rowspan="2">Taxable Value</th>
+                                                <th class="border p-2 text-center" colspan="2">Integrated Tax</th>
+                                                <th class="border p-2" rowspan="2">Total Tax Amount</th>
+                                            </tr>
+                                            <tr>
+                                                <th class="border p-2">Rate</th>
+                                                <th class="border p-2">Amount</th>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2">90271000</td>
+                                                <td class="border p-2 text-right">5000.00</td>
+                                                <td class="border p-2 text-right">18%</td>
+                                                <td class="border p-2 text-right">900.00</td>
+                                                <td class="border p-2 text-right">900.00</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="border p-2 text-right font-bold">Total</td>
+                                                <td class="border p-2 text-right font-bold">5000.00</td>
+                                                <td class="border p-2"></td>
+                                                <td class="border p-2 text-right font-bold">900.00</td>
+                                                <td class="border p-2 text-right font-bold">900.00</td>
+                                            </tr>
+                                        </table>
+                                        
+                                        <div class="mt-2 text-sm">
+                                            <span class="font-bold">Total Amount (in words): </span>
+                                            <span>Five Thousand Nine Hundred Only.</span>
+                                        </div>
+                                        <div class="mt-1 text-sm">
+                                            <span class="font-bold">Proprietorship's PAN: </span>
+                                            <span>ALLPD1172E</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="invoice-footer grid grid-cols-2">
+                                        <div class="text-sm">
+                                            <div class="font-bold mb-2">Declaration</div>
+                                            <p>We declare that this invoice shows the actual price of the Services/goods described and that all particulars are true and correct.</p>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold mb-2">Company Bank Details</div>
+                                            <table class="w-full text-sm">
+                                                <tr>
+                                                    <td class="py-1">Bank Name</td>
+                                                    <td class="py-1">: Abhudaya Co Op Bank</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="py-1">A/c No.</td>
+                                                    <td class="py-1">: 107021100000620</td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="py-1">Branch & Ifsc Code</td>
+                                                    <td class="py-1">: ABHY0065066</td>
+                                                </tr>
+                                            </table>
+                                            <div class="text-center mt-6">
+                                                <div class="mb-2">For CIS Solutions</div>
+                                                <div class="mt-10">Authorised Signatory</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="text-center mt-6 text-xs">This is a Computer Generated Invoice</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Invoice List -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="mb-4 flex justify-between items-center">
+                            <div class="relative">
+                                <input type="text" placeholder="Search invoices..." class="pl-10 pr-3 py-2 border rounded-lg">
+                                <i class="bi bi-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <select class="border rounded-lg px-3 py-2">
+                                    <option>All Invoices</option>
+                                    <option>Paid</option>
+                                    <option>Unpaid</option>
+                                    <option>Overdue</option>
+                                </select>
+                                <input type="date" class="border rounded-lg px-3 py-2">
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-3 px-4 text-left">Invoice #</th>
+                                        <th class="py-3 px-4 text-left">Customer</th>
+                                        <th class="py-3 px-4 text-left">Date</th>
+                                        <th class="py-3 px-4 text-left">Due Date</th>
+                                        <th class="py-3 px-4 text-left">Amount</th>
+                                        <th class="py-3 px-4 text-left">Status</th>
+                                        <th class="py-3 px-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="invoice-list">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-gray-500">No invoices created yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products/Services Page -->
+                <div id="products-page" class="page-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Product/Service Management</h2>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" id="add-product-btn">
+                            <i class="bi bi-plus-circle mr-2"></i> Add New Product
+                        </button>
+                    </div>
+
+                    <!-- Add Product Form -->
+                    <div id="add-product-form" class="bg-white p-6 rounded-lg shadow-md mb-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Add New Product/Service</h3>
+                            <button class="text-gray-500" id="close-product-form">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="product-name">
+                                    Product/Service Name*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="product-name" type="text" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="product-type">
+                                    Type*
+                                </label>
+                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                        id="product-type">
+                                    <option value="product">Product</option>
+                                    <option value="service">Service</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="hsn-sac">
+                                    HSN/SAC Code*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="hsn-sac" type="text" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="unit-price">
+                                    Unit Price*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="unit-price" type="number" step="0.01" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="gst-rate">
+                                    GST Rate*
+                                </label>
+                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                        id="product-gst-rate">
+                                    <option value="0">0%</option>
+                                    <option value="5">5%</option>
+                                    <option value="12">12%</option>
+                                    <option value="18" selected>18%</option>
+                                    <option value="28">28%</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="unit">
+                                    Unit*
+                                </label>
+                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                        id="unit">
+                                    <option value="Nos" selected>Nos</option>
+                                    <option value="Pcs">Pcs</option>
+                                    <option value="Kg">Kg</option>
+                                    <option value="Ltr">Ltr</option>
+                                    <option value="Box">Box</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="stock-quantity">
+                                    Stock Quantity
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="stock-quantity" type="number" min="0">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="low-stock-alert">
+                                    Low Stock Alert
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="low-stock-alert" type="number" min="0">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="product-description">
+                                    Description
+                                </label>
+                                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                          id="product-description" rows="3"></textarea>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded" id="cancel-product">
+                                Cancel
+                            </button>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" id="save-product">
+                                Save Product
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Product List Tabs -->
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="border-b">
+                            <ul class="flex flex-wrap -mb-px">
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 border-b-2 border-blue-600 text-blue-600 font-semibold">All Products</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Products</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Services</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Low Stock</a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="mb-4 flex justify-between items-center">
+                                <div class="relative">
+                                    <input type="text" placeholder="Search products..." class="pl-10 pr-3 py-2 border rounded-lg">
+                                    <i class="bi bi-search absolute left-3 top-3 text-gray-400"></i>
+                                </div>
+                                <div>
+                                    <select class="border rounded-lg px-3 py-2">
+                                        <option>Sort by Name</option>
+                                        <option>Sort by Price: Low to High</option>
+                                        <option>Sort by Price: High to Low</option>
+                                        <option>Sort by Stock</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="py-3 px-4 text-left">Name</th>
+                                            <th class="py-3 px-4 text-left">HSN/SAC</th>
+                                            <th class="py-3 px-4 text-left">Unit</th>
+                                            <th class="py-3 px-4 text-left">Price</th>
+                                            <th class="py-3 px-4 text-left">GST Rate</th>
+                                            <th class="py-3 px-4 text-left">Stock</th>
+                                            <th class="py-3 px-4 text-left">Status</th>
+                                            <th class="py-3 px-4 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="product-list">
+                                        <tr>
+                                            <td class="py-3 px-4">Courier Charges</td>
+                                            <td class="py-3 px-4">90271000</td>
+                                            <td class="py-3 px-4">Nos</td>
+                                            <td class="py-3 px-4">₹5,000.00</td>
+                                            <td class="py-3 px-4">18%</td>
+                                            <td class="py-3 px-4">N/A</td>
+                                            <td class="py-3 px-4"><span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">Active</span></td>
+                                            <td class="py-3 px-4">
+                                                <button class="text-blue-500 hover:text-blue-700 mr-2"><i class="bi bi-pencil"></i></button>
+                                                <button class="text-red-500 hover:text-red-700"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Purchases Page -->
+                <div id="purchases-page" class="page-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Purchase Management</h2>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" id="add-purchase-btn">
+                            <i class="bi bi-plus-circle mr-2"></i> Add New Purchase
+                        </button>
+                    </div>
+
+                    <!-- Add Purchase Form -->
+                    <div id="add-purchase-form" class="bg-white p-6 rounded-lg shadow-md mb-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Add New Purchase</h3>
+                            <button class="text-gray-500" id="close-purchase-form">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="vendor-name">
+                                    Vendor Name*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="vendor-name" type="text" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="vendor-gstin">
+                                    Vendor GSTIN
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="vendor-gstin" type="text">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="purchase-date">
+                                    Purchase Date*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="purchase-date" type="date" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="purchase-order-no">
+                                    Purchase Order No.
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="purchase-order-no" type="text">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="vendor-bill-no">
+                                    Vendor Bill No.*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="vendor-bill-no" type="text" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="vendor-bill-date">
+                                    Bill Date*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="vendor-bill-date" type="date" required>
+                            </div>
+                        </div>
+
+                        <!-- Purchase Items Table -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3">Purchase Items</h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full border">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="py-2 px-4 border text-left">#</th>
+                                            <th class="py-2 px-4 border text-left">Product/Service</th>
+                                            <th class="py-2 px-4 border text-left">HSN/SAC</th>
+                                            <th class="py-2 px-4 border text-left">Quantity</th>
+                                            <th class="py-2 px-4 border text-left">Rate</th>
+                                            <th class="py-2 px-4 border text-left">GST %</th>
+                                            <th class="py-2 px-4 border text-left">Amount</th>
+                                            <th class="py-2 px-4 border text-left">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="purchase-items">
+                                        <tr id="purchase-item-row-1">
+                                            <td class="py-2 px-4 border">1</td>
+                                            <td class="py-2 px-4 border">
+                                                <select id="purchase-product-1" class="w-full border rounded py-1 px-2">
+                                                    <option value="">Select Product</option>
+                                                </select>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="text" id="purchase-hsn-1" class="w-full border rounded py-1 px-2" readonly>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="purchase-qty-1" class="w-full border rounded py-1 px-2" value="1" min="1">
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="purchase-rate-1" class="w-full border rounded py-1 px-2" step="0.01">
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <select id="purchase-gst-1" class="w-full border rounded py-1 px-2">
+                                                    <option value="0">0%</option>
+                                                    <option value="5">5%</option>
+                                                    <option value="12">12%</option>
+                                                    <option value="18" selected>18%</option>
+                                                    <option value="28">28%</option>
+                                                </select>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <input type="number" id="purchase-amount-1" class="w-full bg-gray-100 rounded py-1 px-2" readonly>
+                                            </td>
+                                            <td class="py-2 px-4 border">
+                                                <button class="text-red-500"><i class="bi bi-trash"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <button class="mt-3 px-3 py-1 bg-gray-200 rounded-lg text-sm" id="add-purchase-item-row">
+                                <i class="bi bi-plus-circle"></i> Add Item
+                            </button>
+                        </div>
+
+                        <!-- Purchase Totals -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                            <div></div>
+                            <div class="border rounded p-4">
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <label class="text-gray-700">Subtotal:</label>
+                                    <input type="text" id="purchase-subtotal" class="w-full border rounded py-1 px-2 bg-gray-100 text-right" value="0.00" readonly>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <label class="text-gray-700">Tax Amount:</label>
+                                    <input type="text" id="purchase-tax-total" class="w-full border rounded py-1 px-2 bg-gray-100 text-right" value="0.00" readonly>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 pt-2 border-t mt-2">
+                                    <label class="text-gray-700 font-bold">Grand Total:</label>
+                                    <input type="text" id="purchase-grand-total" class="w-full border rounded py-1 px-2 bg-gray-100 text-right font-bold" value="0.00" readonly>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2 mt-2">
+                                    <label class="text-gray-700">Payment Status:</label>
+                                    <select id="purchase-payment-status" class="w-full border rounded py-1 px-2">
+                                        <option value="paid">Paid</option>
+                                        <option value="unpaid">Unpaid</option>
+                                        <option value="partial">Partially Paid</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded" id="cancel-purchase">
+                                Cancel
+                            </button>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" id="save-purchase">
+                                Save Purchase
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Purchase List -->
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="mb-4 flex justify-between items-center">
+                            <div class="relative">
+                                <input type="text" placeholder="Search purchases..." class="pl-10 pr-3 py-2 border rounded-lg">
+                                <i class="bi bi-search absolute left-3 top-3 text-gray-400"></i>
+                            </div>
+                            <div class="flex gap-2">
+                                <select class="border rounded-lg px-3 py-2">
+                                    <option>All Purchases</option>
+                                    <option>Paid</option>
+                                    <option>Unpaid</option>
+                                    <option>Partially Paid</option>
+                                </select>
+                                <input type="date" class="border rounded-lg px-3 py-2">
+                            </div>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full">
+                                <thead>
+                                    <tr class="bg-gray-100">
+                                        <th class="py-3 px-4 text-left">Date</th>
+                                        <th class="py-3 px-4 text-left">Vendor</th>
+                                        <th class="py-3 px-4 text-left">Bill No.</th>
+                                        <th class="py-3 px-4 text-left">Total Items</th>
+                                        <th class="py-3 px-4 text-left">Amount</th>
+                                        <th class="py-3 px-4 text-left">Status</th>
+                                        <th class="py-3 px-4 text-left">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="purchase-list">
+                                    <tr>
+                                        <td colspan="7" class="text-center py-4 text-gray-500">No purchases added yet.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Expenses Page -->
+                <div id="expenses-page" class="page-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Expense Management</h2>
+                        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg flex items-center" id="add-expense-btn">
+                            <i class="bi bi-plus-circle mr-2"></i> Add New Expense
+                        </button>
+                    </div>
+
+                    <!-- Add Expense Form -->
+                    <div id="add-expense-form" class="bg-white p-6 rounded-lg shadow-md mb-6 hidden">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Add New Expense</h3>
+                            <button class="text-gray-500" id="close-expense-form">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expense-date">
+                                    Date*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="expense-date" type="date" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expense-category">
+                                    Category*
+                                </label>
+                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                        id="expense-category" required>
+                                    <option value="">Select Category</option>
+                                    <option value="Office Supplies">Office Supplies</option>
+                                    <option value="Rent">Rent</option>
+                                    <option value="Utilities">Utilities</option>
+                                    <option value="Travel">Travel</option>
+                                    <option value="Meals">Meals & Entertainment</option>
+                                    <option value="Salaries">Salaries</option>
+                                    <option value="Marketing">Marketing</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expense-amount">
+                                    Amount*
+                                </label>
+                                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                       id="expense-amount" type="number" step="0.01" min="0" required>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expense-description">
+                                    Description*
+                                </label>
+                                <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                          id="expense-description" rows="3" required></textarea>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="payment-method">
+                                    Payment Method*
+                                </label>
+                                <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                        id="payment-method" required>
+                                    <option value="">Select Payment Method</option>
+                                    <option value="Cash">Cash</option>
+                                    <option value="Bank Transfer">Bank Transfer</option>
+                                    <option value="Credit Card">Credit Card</option>
+                                    <option value="Debit Card">Debit Card</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-gray-700 text-sm font-bold mb-2" for="expense-receipt">
+                                    Attach Receipt
+                                </label>
+                                <div class="flex items-center">
+                                    <label class="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-50">
+                                        <i class="bi bi-cloud-arrow-up text-2xl text-gray-400 mr-2"></i>
+                                        <span class="text-gray-500">Click to upload</span>
+                                        <input type="file" id="expense-receipt" class="hidden">
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-2 mt-4">
+                            <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded" id="cancel-expense">
+                                Cancel
+                            </button>
+                            <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded" id="save-expense">
+                                Save Expense
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Expense Reports Tabs -->
+                    <div class="bg-white rounded-lg shadow-md">
+                        <div class="border-b">
+                            <ul class="flex flex-wrap -mb-px">
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 border-b-2 border-blue-600 text-blue-600 font-semibold">All Expenses</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Monthly Report</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Category-wise</a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="p-6">
+                            <div class="mb-4 flex justify-between items-center">
+                                <div class="relative">
+                                    <input type="text" placeholder="Search expenses..." class="pl-10 pr-3 py-2 border rounded-lg">
+                                    <i class="bi bi-search absolute left-3 top-3 text-gray-400"></i>
+                                </div>
+                                <div class="flex gap-2">
+                                    <select class="border rounded-lg px-3 py-2">
+                                        <option>All Categories</option>
+                                        <option>Office Supplies</option>
+                                        <option>Rent</option>
+                                        <option>Utilities</option>
+                                        <option>Travel</option>
+                                        <option>Meals</option>
+                                        <option>Salaries</option>
+                                        <option>Marketing</option>
+                                        <option>Other</option>
+                                    </select>
+                                    <input type="date" class="border rounded-lg px-3 py-2">
+                                </div>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full">
+                                    <thead>
+                                        <tr class="bg-gray-100">
+                                            <th class="py-3 px-4 text-left">Date</th>
+                                            <th class="py-3 px-4 text-left">Category</th>
+                                            <th class="py-3 px-4 text-left">Description</th>
+                                            <th class="py-3 px-4 text-left">Amount</th>
+                                            <th class="py-3 px-4 text-left">Payment Method</th>
+                                            <th class="py-3 px-4 text-left">Receipt</th>
+                                            <th class="py-3 px-4 text-left">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="expense-list">
+                                        <tr>
+                                            <td colspan="7" class="text-center py-4 text-gray-500">No expenses added yet.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings Page -->
+                <div id="settings-page" class="page-content hidden">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Settings</h2>
+                    </div>
+
+                    <div class="bg-white p-6 rounded-lg shadow-md">
+                        <div class="border-b">
+                            <ul class="flex flex-wrap -mb-px">
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 border-b-2 border-blue-600 text-blue-600 font-semibold">Company Profile</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Invoice Settings</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Bank Accounts</a>
+                                </li>
+                                <li class="mr-2">
+                                    <a href="#" class="inline-block p-4 text-gray-500 hover:text-gray-700">Backup & Restore</a>
+                                </li>
+                            </ul>
+                        </div>
+                        
+                        <div class="p-6">
+                            <h3 class="text-lg font-semibold mb-4">Company Information</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-name">
+                                        Company Name*
+                                    </label>
+                                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                           id="company-name" type="text" value="CIS SOLUTIONS" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-gstin">
+                                        GSTIN*
+                                    </label>
+                                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                           id="company-gstin" type="text" value="27ALLPD1172E1ZF" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-email">
+                                        Email
+                                    </label>
+                                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                           id="company-email" type="email" value="cis2.solutions@gmail.com">
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-phone">
+                                        Phone Number
+                                    </label>
+                                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                           id="company-phone" type="text">
+                                </div>
+                                <div class="mb-4 md:col-span-2">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-address">
+                                        Address*
+                                    </label>
+                                    <textarea class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                              id="company-address" rows="3" required>1187, Shree Krushna Nagar, Mauli Street, Ambarnath, Thane - 421501</textarea>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-state">
+                                        State*
+                                    </label>
+                                    <select class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                            id="company-state" required>
+                                        <option value="">Select State</option>
+                                        <option value="Maharashtra" selected>Maharashtra</option>
+                                    </select>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-state-code">
+                                        State Code*
+                                    </label>
+                                    <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
+                                           id="company-state-code" type="text" value="27" required>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-logo">
+                                        Company Logo
+                                    </label>
+                                    <div class="flex items-center">
+                                        <label class="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-50">
+                                            <i class="bi bi-cloud-arrow-up text-2xl text-gray-400 mr-2"></i>
+                                            <span class="text-gray-500">Click to upload logo</span>
+                                            <input type="file" id="company-logo" class="hidden">
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="mb-4">
+                                    <label class="block text-gray-700 text-sm font-bold mb-2" for="company-signature">
+                                        Digital Signature
+                                    </label>
+                                    <div class="flex items-center">
+                                        <label class="w-full flex items-center justify-center border-2 border-dashed border-gray-300 rounded-lg py-3 px-4 cursor-pointer hover:bg-gray-50">
+                                            <i class="bi bi-cloud-arrow-up text-2xl text-gray-400 mr-2"></i>
+                                            <span class="text-gray-500">Click to upload signature</span>
+                                            <input type="file" id="company-signature" class="hidden">
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end gap-2 mt-6">
+                                <button class="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded">
+                                    Reset
+                                </button>
+                                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+                                    Save Changes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize app with dummy data
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set current date for date inputs
+            const today = new Date().toISOString().split('T')[0];
+            if (document.getElementById('invoice-date')) {
+                document.getElementById('invoice-date').value = today;
+            }
+            if (document.getElementById('expense-date')) {
+                document.getElementById('expense-date').value = today;
+            }
+            if (document.getElementById('purchase-date')) {
+                document.getElementById('purchase-date').value = today;
+            }
+            if (document.getElementById('vendor-bill-date')) {
+                document.getElementById('vendor-bill-date').value = today;
+            }
+
+            // Initialize sales chart
+            const salesChartCtx = document.getElementById('salesChart').getContext('2d');
+            const salesChart = new Chart(salesChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Sales',
+                        data: [0, 0, 0, 0, 0, 0],
+                        backgroundColor: 'rgba(59, 130, 246, 0.5)',
+                        borderColor: 'rgba(59, 130, 246, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+
+            // Initialize database (localStorage)
+            if (!localStorage.getItem('customers')) {
+                localStorage.setItem('customers', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('products')) {
+                localStorage.setItem('products', JSON.stringify([{
+                    id: 'courier',
+                    name: 'Courier Charges',
+                    type: 'service',
+                    hsn: '90271000',
+                    price: 5000.00,
+                    gstRate: 18,
+                    unit: 'Nos',
+                    stockQuantity: null,
+                    isActive: true
+                }]));
+            }
+            if (!localStorage.getItem('invoices')) {
+                localStorage.setItem('invoices', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('purchases')) {
+                localStorage.setItem('purchases', JSON.stringify([]));
+            }
+            if (!localStorage.getItem('expenses')) {
+                localStorage.setItem('expenses', JSON.stringify([]));
+            }
+
+            // Load products into product lists
+            loadProductList();
+            loadProductSelectOptions();
+        });
+
+        // Sidebar Toggle
+        document.getElementById('toggle-sidebar').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            const mainContent = document.getElementById('main-content');
+            const navTexts = document.querySelectorAll('.nav-text');
+            const fullTitle = document.getElementById('full-title');
+            const shortTitle = document.getElementById('short-title');
+            
+            sidebar.classList.toggle('collapsed');
+            mainContent.classList.toggle('expanded');
+            
+            if (sidebar.classList.contains('collapsed')) {
+                navTexts.forEach(text => text.style.display = 'none');
+                fullTitle.classList.add('hidden');
+                shortTitle.classList.remove('hidden');
+            } else {
+                navTexts.forEach(text => text.style.display = 'inline');
+                fullTitle.classList.remove('hidden');
+                shortTitle.classList.add('hidden');
+            }
+        });
+
+        // Navigation
+        const navItems = document.querySelectorAll('.nav-item');
+        navItems.forEach(item => {
+            item.addEventListener('click', () => {
+                navItems.forEach(navItem => navItem.classList.remove('active'));
+                item.classList.add('active');
+                
+                const pageName = item.getAttribute('data-page');
+                showPage(pageName);
+            });
+        });
+
+        function showPage(pageName) {
+            const pageTitle = document.getElementById('page-title');
+            const pageContents = document.querySelectorAll('.page-content');
+            
+            pageContents.forEach(page => {
+                page.classList.add('hidden');
+            });
+            
+            const currentPage = document.getElementById(`${pageName}-page`);
+            if (currentPage) {
+                currentPage.classList.remove('hidden');
+                pageTitle.textContent = pageName.charAt(0).toUpperCase() + pageName.slice(1);
+            }
+        }
+
+        // Customer Form Handlers
+        document.getElementById('add-customer-btn').addEventListener('click', () => {
+            document.getElementById('add-customer-form').classList.remove('hidden');
+        });
+
+        document.getElementById('close-customer-form').addEventListener('click', () => {
+            document.getElementById('add-customer-form').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-customer').addEventListener('click', () => {
+            document.getElementById('add-customer-form').classList.add('hidden');
+        });
+
+        document.getElementById('save-customer').addEventListener('click', () => {
+            const customerName = document.getElementById('customer-name').value;
+            const contactPerson = document.getElementById('contact-person').value;
+            const gstin = document.getElementById('gstin').value;
+            const cosmeticLicense = document.getElementById('cosmetic-license').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const billingAddress = document.getElementById('billing-address').value;
+            const shippingAddress = document.getElementById('shipping-address').value || billingAddress;
+            const state = document.getElementById('state').value;
+            const stateCode = document.getElementById('state-code').value;
+            
+            // Validation
+            if (!customerName || !phone || !billingAddress || !state) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Save customer
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            const newCustomer = {
+                id: Date.now().toString(),
+                name: customerName,
+                contactPerson,
+                gstin,
+                cosmeticLicense,
+                email,
+                phone,
+                billingAddress,
+                shippingAddress,
+                state,
+                stateCode
+            };
+            
+            customers.push(newCustomer);
+            localStorage.setItem('customers', JSON.stringify(customers));
+            
+            // Update customer list
+            updateCustomerList();
+            
+            // Reset form and hide
+            document.getElementById('customer-name').value = '';
+            document.getElementById('contact-person').value = '';
+            document.getElementById('gstin').value = '';
+            document.getElementById('cosmetic-license').value = '';
+            document.getElementById('email').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('billing-address').value = '';
+            document.getElementById('shipping-address').value = '';
+            document.getElementById('state').value = '';
+            document.getElementById('state-code').value = '';
+            document.getElementById('add-customer-form').classList.add('hidden');
+            
+            // Update customer dropdown in invoice form
+            updateCustomerSelect();
+        });
+
+        // State code auto-update
+        document.getElementById('state').addEventListener('change', function() {
+            const stateSelect = document.getElementById('state');
+            const stateCodeInput = document.getElementById('state-code');
+            
+            if (stateSelect.value === 'Andhra Pradesh') {
+                stateCodeInput.value = '37';
+            } else if (stateSelect.value === 'Maharashtra') {
+                stateCodeInput.value = '27';
+            } else {
+                stateCodeInput.value = '';
+            }
+        });
+
+        // Same as billing address checkbox
+        document.getElementById('same-as-billing').addEventListener('change', function() {
+            if (this.checked) {
+                document.getElementById('shipping-address').value = document.getElementById('billing-address').value;
+                document.getElementById('shipping-address').setAttribute('readonly', true);
+            } else {
+                document.getElementById('shipping-address').removeAttribute('readonly');
+            }
+        });
+
+        // Update customer list
+        function updateCustomerList() {
+            const customerList = document.getElementById('customer-list');
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            
+            if (customers.length === 0) {
+                customerList.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-4 text-gray-500">No customers added yet.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            customers.forEach(customer => {
+                html += `
+                    <tr>
+                        <td class="py-3 px-4">${customer.name}</td>
+                        <td class="py-3 px-4">${customer.email || '-'}</td>
+                        <td class="py-3 px-4">${customer.phone}</td>
+                        <td class="py-3 px-4">${customer.gstin || '-'}</td>
+                        <td class="py-3 px-4">₹0.00</td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="editCustomer('${customer.id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700" onclick="deleteCustomer('${customer.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            customerList.innerHTML = html;
+        }
+
+        // Delete customer
+        function deleteCustomer(id) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+                const filteredCustomers = customers.filter(customer => customer.id !== id);
+                localStorage.setItem('customers', JSON.stringify(filteredCustomers));
+                updateCustomerList();
+                updateCustomerSelect();
+            }
+        }
+
+        // Update customer select dropdown
+        function updateCustomerSelect() {
+            const customerSelect = document.getElementById('customer-select');
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            
+            let options = '<option value="">Select a customer</option>';
+            customers.forEach(customer => {
+                options += `<option value="${customer.id}">${customer.name}</option>`;
+            });
+            
+            customerSelect.innerHTML = options;
+        }
+
+        // Invoice Form Handlers
+        document.getElementById('create-invoice-btn').addEventListener('click', () => {
+            document.getElementById('create-invoice-form').classList.remove('hidden');
+            updateCustomerSelect();
+        });
+
+        document.getElementById('close-invoice-form').addEventListener('click', () => {
+            document.getElementById('create-invoice-form').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-invoice').addEventListener('click', () => {
+            document.getElementById('create-invoice-form').classList.add('hidden');
+        });
+
+        // Customer selection in invoice
+        document.getElementById('customer-select').addEventListener('change', function() {
+            const customerId = this.value;
+            if (!customerId) {
+                // Reset fields if no customer selected
+                document.getElementById('invoice-gstin').value = '';
+                document.getElementById('invoice-address').value = '';
+                document.getElementById('invoice-state').value = '';
+                document.getElementById('invoice-state-code').value = '';
+                return;
+            }
+            
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            const customer = customers.find(c => c.id === customerId);
+            
+            if (customer) {
+                document.getElementById('invoice-gstin').value = customer.gstin || '';
+                document.getElementById('invoice-address').value = customer.billingAddress;
+                document.getElementById('invoice-state').value = customer.state;
+                document.getElementById('invoice-state-code').value = customer.stateCode;
+            }
+        });
+
+        // Add item row in invoice
+        document.getElementById('add-item-row').addEventListener('click', function() {
+            const invoiceItems = document.getElementById('invoice-items');
+            const rowCount = invoiceItems.getElementsByTagName('tr').length + 1;
+            
+            const newRow = document.createElement('tr');
+            newRow.id = `item-row-${rowCount}`;
+            newRow.innerHTML = `
+                <td class="py-2 px-4 border">${rowCount}</td>
+                <td class="py-2 px-4 border">
+                    <select id="product-${rowCount}" class="w-full border rounded py-1 px-2 product-select">
+                        <option value="">Select Product</option>
+                    </select>
+                </td>
+                <td class="py-2 px-4 border">
+                    <input type="text" id="hsn-${rowCount}" class="w-full border rounded py-1 px-2" readonly>
+                </td>
+                <td class="py-2 px-4 border">
+                    <input type="number" id="qty-${rowCount}" class="w-full border rounded py-1 px-2 item-qty" value="1" min="1">
+                </td>
+                <td class="py-2 px-4 border">
+                    <input type="number" id="rate-${rowCount}" class="w-full border rounded py-1 px-2 item-rate" step="0.01">
+                </td>
+                <td class="py-2 px-4 border">
+                    <input type="text" id="per-${rowCount}" class="w-full border rounded py-1 px-2" value="Nos">
+                </td>
+                <td class="py-2 px-4 border">
+                    <input type="number" id="disc-${rowCount}" class="w-full border rounded py-1 px-2 item-disc" value="0" min="0" max="100">
+                </td>
+                <td class="py-2 px-4 border">
+                    <input type="number" id="amount-${rowCount}" class="w-full bg-gray-100 rounded py-1 px-2 item-amount" readonly>
+                </td>
+                <td class="py-2 px-4 border">
+                    <button class="text-red-500 delete-item-btn" data-row="${rowCount}"><i class="bi bi-trash"></i></button>
+                </td>
+            `;
+            
+            invoiceItems.appendChild(newRow);
+            
+            // Update product select options
+            const productSelect = newRow.querySelector(`#product-${rowCount}`);
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            let options = '<option value="">Select Product</option>';
+            products.forEach(product => {
+                options += `<option value="${product.id}">${product.name}</option>`;
+            });
+            productSelect.innerHTML = options;
+            
+            // Add event listeners for calculation
+            newRow.querySelector(`#product-${rowCount}`).addEventListener('change', handleProductChange);
+            newRow.querySelector(`#qty-${rowCount}`).addEventListener('change', calculateItemAmount);
+            newRow.querySelector(`#rate-${rowCount}`).addEventListener('change', calculateItemAmount);
+            newRow.querySelector(`#disc-${rowCount}`).addEventListener('change', calculateItemAmount);
+            newRow.querySelector('.delete-item-btn').addEventListener('click', deleteItemRow);
+        });
+
+        // Handle product selection in invoice
+        function handleProductChange(event) {
+            const rowId = event.target.id.split('-')[1];
+            const productId = event.target.value;
+            
+            if (!productId) {
+                // Reset fields if no product selected
+                document.getElementById(`hsn-${rowId}`).value = '';
+                document.getElementById(`rate-${rowId}`).value = '';
+                document.getElementById(`amount-${rowId}`).value = '';
+                calculateInvoiceTotal();
+                return;
+            }
+            
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const product = products.find(p => p.id === productId);
+            
+            if (product) {
+                document.getElementById(`hsn-${rowId}`).value = product.hsn;
+                document.getElementById(`rate-${rowId}`).value = product.price.toFixed(2);
+                document.getElementById(`per-${rowId}`).value = product.unit;
+                calculateItemAmount(event);
+            }
+        }
+
+        // Calculate item amount
+        function calculateItemAmount(event) {
+            let rowId;
+            if (event) {
+                // Extract row id from the input that triggered the event
+                rowId = event.target.id.split('-')[1];
+            } else {
+                // If no event (e.g., direct call), we might be recalculating all rows
+                const itemRows = document.querySelectorAll('#invoice-items tr');
+                itemRows.forEach(row => {
+                    const id = row.id.split('-')[2];
+                    if (id) calculateSingleItemAmount(id);
+                });
+                calculateInvoiceTotal();
+                return;
+            }
+            
+            calculateSingleItemAmount(rowId);
+            calculateInvoiceTotal();
+        }
+
+        function calculateSingleItemAmount(rowId) {
+            const qtyInput = document.getElementById(`qty-${rowId}`);
+            const rateInput = document.getElementById(`rate-${rowId}`);
+            const discInput = document.getElementById(`disc-${rowId}`);
+            const amountInput = document.getElementById(`amount-${rowId}`);
+            
+            if (!qtyInput || !rateInput || !amountInput) return;
+            
+            const qty = parseFloat(qtyInput.value) || 0;
+            const rate = parseFloat(rateInput.value) || 0;
+            const disc = parseFloat(discInput.value) || 0;
+            
+            const discountAmount = (rate * qty) * (disc / 100);
+            const amount = (rate * qty) - discountAmount;
+            
+            amountInput.value = amount.toFixed(2);
+        }
+
+        // Calculate invoice total
+        function calculateInvoiceTotal() {
+            const itemAmounts = document.querySelectorAll('.item-amount');
+            let subtotal = 0;
+            
+            itemAmounts.forEach(input => {
+                subtotal += parseFloat(input.value) || 0;
+            });
+            
+            document.getElementById('subtotal').value = subtotal.toFixed(2);
+            
+            // Calculate GST
+            const gstRate = document.getElementById('gst-rate').value;
+            let taxAmount = 0;
+            
+            // Hide all GST containers first
+            document.getElementById('cgst-container').classList.add('hidden');
+            document.getElementById('sgst-container').classList.add('hidden');
+            document.getElementById('igst-container').classList.add('hidden');
+            
+            if (gstRate === "9+9") {
+                // CGST + SGST
+                const cgstAmount = subtotal * 0.09;
+                const sgstAmount = subtotal * 0.09;
+                taxAmount = cgstAmount + sgstAmount;
+                
+                document.getElementById('cgst-amount').value = cgstAmount.toFixed(2);
+                document.getElementById('sgst-amount').value = sgstAmount.toFixed(2);
+                
+                document.getElementById('cgst-container').classList.remove('hidden');
+                document.getElementById('sgst-container').classList.remove('hidden');
+            } else {
+                // IGST
+                const igstRate = parseFloat(gstRate) / 100;
+                taxAmount = subtotal * igstRate;
+                
+                document.getElementById('igst-amount').value = taxAmount.toFixed(2);
+                document.getElementById('igst-container').classList.remove('hidden');
+            }
+            
+            document.getElementById('tax-total').value = taxAmount.toFixed(2);
+            
+            // Calculate grand total
+            const rounding = parseFloat(document.getElementById('rounding').value) || 0;
+            const grandTotal = subtotal + taxAmount + rounding;
+            
+            document.getElementById('grand-total').value = grandTotal.toFixed(2);
+            
+            // Update amount in words
+            document.getElementById('amount-in-words').textContent = numberToWords(grandTotal) + " Only";
+        }
+
+        // GST rate change handler
+        document.getElementById('gst-rate').addEventListener('change', calculateInvoiceTotal);
+
+        // Rounding change handler
+        document.getElementById('rounding').addEventListener('change', calculateInvoiceTotal);
+
+        // Delete item row
+        function deleteItemRow(event) {
+            const button = event.target.closest('.delete-item-btn');
+            if (!button) return;
+            
+            const rowToDelete = button.closest('tr');
+            if (document.querySelectorAll('#invoice-items tr').length > 1) {
+                rowToDelete.remove();
+                renumberInvoiceRows();
+                calculateInvoiceTotal();
+            } else {
+                alert("Cannot delete the only row. You need at least one item.");
+            }
+        }
+
+        // Renumber invoice rows after deletion
+        function renumberInvoiceRows() {
+            const rows = document.querySelectorAll('#invoice-items tr');
+            rows.forEach((row, index) => {
+                const rowNum = index + 1;
+                row.id = `item-row-${rowNum}`;
+                row.cells[0].textContent = rowNum;
+                
+                // Update input and select IDs
+                const inputs = row.querySelectorAll('input, select');
+                inputs.forEach(input => {
+                    const inputParts = input.id.split('-');
+                    if (inputParts.length >= 2) {
+                        input.id = `${inputParts[0]}-${rowNum}`;
+                    }
+                });
+                
+                // Update delete button data-row attribute
+                const deleteBtn = row.querySelector('.delete-item-btn');
+                if (deleteBtn) {
+                    deleteBtn.setAttribute('data-row', rowNum);
+                }
+            });
+        }
+
+        // Convert number to words
+        function numberToWords(amount) {
+            const ones = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine', 'Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+            const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+            
+            function convertNumberToWords(num) {
+                if (num < 20) return ones[num];
+                if (num < 100) return tens[Math.floor(num / 10)] + (num % 10 ? ' ' + ones[num % 10] : '');
+                if (num < 1000) return ones[Math.floor(num / 100)] + ' Hundred' + (num % 100 ? ' ' + convertNumberToWords(num % 100) : '');
+                if (num < 100000) return convertNumberToWords(Math.floor(num / 1000)) + ' Thousand' + (num % 1000 ? ' ' + convertNumberToWords(num % 1000) : '');
+                if (num < 10000000) return convertNumberToWords(Math.floor(num / 100000)) + ' Lakh' + (num % 100000 ? ' ' + convertNumberToWords(num % 100000) : '');
+                return convertNumberToWords(Math.floor(num / 10000000)) + ' Crore' + (num % 10000000 ? ' ' + convertNumberToWords(num % 10000000) : '');
+            }
+            
+            // Split the amount into rupees and paise
+            const amountStr = amount.toString();
+            const parts = amountStr.split('.');
+            const rupees = parseInt(parts[0]);
+            
+            // Words for rupees part
+            let result = '';
+            if (rupees > 0) {
+                result += convertNumberToWords(rupees) + ' Rupees';
+            }
+            
+            // Handle paise if present
+            if (parts.length > 1 && parseInt(parts[1]) > 0) {
+                const paise = parseInt(parts[1].padEnd(2, '0').substring(0, 2));
+                if (result !== '') {
+                    result += ' and ';
+                }
+                result += convertNumberToWords(paise) + ' Paise';
+            }
+            
+            return result || 'Zero';
+        }
+
+        // Invoice preview
+        document.getElementById('preview-invoice').addEventListener('click', function() {
+            document.getElementById('invoice-preview-modal').classList.remove('hidden');
+        });
+
+        document.getElementById('close-preview').addEventListener('click', function() {
+            document.getElementById('invoice-preview-modal').classList.add('hidden');
+        });
+
+        document.getElementById('export-pdf').addEventListener('click', function() {
+            window.print();
+        });
+
+        // Save invoice
+        document.getElementById('save-invoice').addEventListener('click', function() {
+            const customerId = document.getElementById('customer-select').value;
+            const invoiceNumber = document.getElementById('invoice-number').value;
+            const invoiceDate = document.getElementById('invoice-date').value;
+            const paymentMode = document.getElementById('invoice-payment-mode').value;
+            const poNumber = document.getElementById('invoice-po-number').value;
+            const poDate = document.getElementById('invoice-po-date').value;
+            const dispatchNo = document.getElementById('invoice-dispatch-no').value;
+            
+            // Validation
+            if (!customerId) {
+                alert('Please select a customer.');
+                return;
+            }
+            
+            if (!invoiceNumber) {
+                alert('Please enter an invoice number.');
+                return;
+            }
+            
+            if (!invoiceDate) {
+                alert('Please enter an invoice date.');
+                return;
+            }
+            
+            // Get customer details
+            const customers = JSON.parse(localStorage.getItem('customers') || '[]');
+            const customer = customers.find(c => c.id === customerId);
+            
+            // Get items
+            const itemRows = document.querySelectorAll('#invoice-items tr');
+            const items = [];
+            
+            let hasItems = false;
+            
+            itemRows.forEach(row => {
+                const rowId = row.id.split('-')[2];
+                const productSelect = document.getElementById(`product-${rowId}`);
+                if (!productSelect) return;
+                
+                const productId = productSelect.value;
+                if (!productId) return;
+                
+                const products = JSON.parse(localStorage.getItem('products') || '[]');
+                const product = products.find(p => p.id === productId);
+                
+                const quantity = parseFloat(document.getElementById(`qty-${rowId}`).value) || 0;
+                const rate = parseFloat(document.getElementById(`rate-${rowId}`).value) || 0;
+                const discount = parseFloat(document.getElementById(`disc-${rowId}`).value) || 0;
+                const amount = parseFloat(document.getElementById(`amount-${rowId}`).value) || 0;
+                
+                if (productId && quantity > 0) {
+                    hasItems = true;
+                    items.push({
+                        productId,
+                        productName: product.name,
+                        hsn: product.hsn,
+                        quantity,
+                        rate,
+                        unit: product.unit,
+                        discount,
+                        amount
+                    });
+                }
+            });
+            
+            if (!hasItems) {
+                alert('Please add at least one valid item to the invoice.');
+                return;
+            }
+            
+            // Get totals
+            const subtotal = parseFloat(document.getElementById('subtotal').value) || 0;
+            const taxTotal = parseFloat(document.getElementById('tax-total').value) || 0;
+            const rounding = parseFloat(document.getElementById('rounding').value) || 0;
+            const grandTotal = parseFloat(document.getElementById('grand-total').value) || 0;
+            const gstRate = document.getElementById('gst-rate').value;
+            
+            // Create invoice object
+            const newInvoice = {
+                id: Date.now().toString(),
+                invoiceNumber,
+                invoiceDate,
+                customerId,
+                customerName: customer.name,
+                customerGstin: customer.gstin,
+                customerAddress: customer.billingAddress,
+                customerState: customer.state,
+                customerStateCode: customer.stateCode,
+                paymentMode,
+                poNumber,
+                poDate,
+                dispatchNo,
+                items,
+                subtotal,
+                taxTotal,
+                gstRate,
+                rounding,
+                grandTotal,
+                status: 'unpaid',
+                createdAt: new Date().toISOString(),
+                amountInWords: document.getElementById('amount-in-words').textContent
+            };
+            
+            // Save to localStorage
+            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+            invoices.push(newInvoice);
+            localStorage.setItem('invoices', JSON.stringify(invoices));
+            
+            // Update invoice list
+            updateInvoiceList();
+            
+            // Close the form
+            document.getElementById('create-invoice-form').classList.add('hidden');
+            
+            // Show success message
+            alert(`Invoice ${invoiceNumber} has been saved successfully.`);
+        });
+
+        // Update invoice list
+        function updateInvoiceList() {
+            const invoiceList = document.getElementById('invoice-list');
+            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+            
+            if (invoices.length === 0) {
+                invoiceList.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-gray-500">No invoices created yet.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Sort invoices by date (newest first)
+            invoices.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            
+            let html = '';
+            invoices.forEach(invoice => {
+                const statusClass = invoice.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
+                let dueDate = '';
+                if (invoice.invoiceDate) {
+                    const date = new Date(invoice.invoiceDate);
+                    date.setDate(date.getDate() + 30); // Assuming Net-30 terms
+                    dueDate = date.toLocaleDateString();
+                }
+                
+                html += `
+                    <tr>
+                        <td class="py-3 px-4">${invoice.invoiceNumber}</td>
+                        <td class="py-3 px-4">${invoice.customerName}</td>
+                        <td class="py-3 px-4">${new Date(invoice.invoiceDate).toLocaleDateString()}</td>
+                        <td class="py-3 px-4">${dueDate}</td>
+                        <td class="py-3 px-4">₹${invoice.grandTotal.toFixed(2)}</td>
+                        <td class="py-3 px-4">
+                            <span class="px-2 py-1 ${statusClass} rounded-full text-xs">
+                                ${invoice.status.charAt(0).toUpperCase() + invoice.status.slice(1)}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="viewInvoice('${invoice.id}')">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                            <button class="text-green-500 hover:text-green-700 mr-2" onclick="markAsPaid('${invoice.id}')">
+                                <i class="bi bi-check-circle"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700" onclick="deleteInvoice('${invoice.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            invoiceList.innerHTML = html;
+        }
+
+        function viewInvoice(id) {
+            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+            const invoice = invoices.find(inv => inv.id === id);
+            
+            if (invoice) {
+                document.getElementById('invoice-preview-modal').classList.remove('hidden');
+                // Update the preview content with the specific invoice details
+                // For simplicity, we're not implementing the full preview update here
+            }
+        }
+
+        function markAsPaid(id) {
+            const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+            const updatedInvoices = invoices.map(inv => {
+                if (inv.id === id) {
+                    return { ...inv, status: 'paid' };
+                }
+                return inv;
+            });
+            
+            localStorage.setItem('invoices', JSON.stringify(updatedInvoices));
+            updateInvoiceList();
+        }
+
+        function deleteInvoice(id) {
+            if (confirm('Are you sure you want to delete this invoice?')) {
+                const invoices = JSON.parse(localStorage.getItem('invoices') || '[]');
+                const filteredInvoices = invoices.filter(inv => inv.id !== id);
+                localStorage.setItem('invoices', JSON.stringify(filteredInvoices));
+                updateInvoiceList();
+            }
+        }
+
+        // Product Form Handlers
+        document.getElementById('add-product-btn').addEventListener('click', () => {
+            document.getElementById('add-product-form').classList.remove('hidden');
+        });
+
+        document.getElementById('close-product-form').addEventListener('click', () => {
+            document.getElementById('add-product-form').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-product').addEventListener('click', () => {
+            document.getElementById('add-product-form').classList.add('hidden');
+        });
+
+        document.getElementById('save-product').addEventListener('click', function() {
+            const productName = document.getElementById('product-name').value;
+            const productType = document.getElementById('product-type').value;
+            const hsnSac = document.getElementById('hsn-sac').value;
+            const unitPrice = parseFloat(document.getElementById('unit-price').value);
+            const gstRate = parseInt(document.getElementById('product-gst-rate').value);
+            const unit = document.getElementById('unit').value;
+            const stockQuantity = document.getElementById('stock-quantity').value ? parseInt(document.getElementById('stock-quantity').value) : null;
+            const lowStockAlert = document.getElementById('low-stock-alert').value ? parseInt(document.getElementById('low-stock-alert').value) : null;
+            const description = document.getElementById('product-description').value;
+            
+            // Validation
+            if (!productName || !hsnSac || isNaN(unitPrice)) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Generate a unique ID
+            const productId = productName.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+            
+            // Create product object
+            const newProduct = {
+                id: productId,
+                name: productName,
+                type: productType,
+                hsn: hsnSac,
+                price: unitPrice,
+                gstRate: gstRate,
+                unit: unit,
+                stockQuantity: stockQuantity,
+                lowStockAlert: lowStockAlert,
+                description: description,
+                isActive: true
+            };
+            
+            // Save to localStorage
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            products.push(newProduct);
+            localStorage.setItem('products', JSON.stringify(products));
+            
+            // Update product list
+            loadProductList();
+            loadProductSelectOptions();
+            
+            // Reset form and hide
+            document.getElementById('product-name').value = '';
+            document.getElementById('product-type').value = 'product';
+            document.getElementById('hsn-sac').value = '';
+            document.getElementById('unit-price').value = '';
+            document.getElementById('product-gst-rate').value = '18';
+            document.getElementById('unit').value = 'Nos';
+            document.getElementById('stock-quantity').value = '';
+            document.getElementById('low-stock-alert').value = '';
+            document.getElementById('product-description').value = '';
+            document.getElementById('add-product-form').classList.add('hidden');
+            
+            // Show success message
+            alert(`Product "${productName}" has been saved successfully.`);
+        });
+
+        // Load product list
+        function loadProductList() {
+            const productList = document.getElementById('product-list');
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            
+            if (products.length === 0) {
+                productList.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center py-4 text-gray-500">No products added yet.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            let html = '';
+            products.forEach(product => {
+                const stockText = product.type === 'service' ? 'N/A' : (product.stockQuantity !== null ? product.stockQuantity : 0);
+                const statusClass = product.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+                const statusText = product.isActive ? 'Active' : 'Inactive';
+                
+                html += `
+                    <tr>
+                        <td class="py-3 px-4">${product.name}</td>
+                        <td class="py-3 px-4">${product.hsn}</td>
+                        <td class="py-3 px-4">${product.unit}</td>
+                        <td class="py-3 px-4">₹${product.price.toFixed(2)}</td>
+                        <td class="py-3 px-4">${product.gstRate}%</td>
+                        <td class="py-3 px-4">${stockText}</td>
+                        <td class="py-3 px-4"><span class="px-2 py-1 ${statusClass} rounded-full text-xs">${statusText}</span></td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="editProduct('${product.id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700" onclick="deleteProduct('${product.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            productList.innerHTML = html;
+        }
+
+        // Load product select options
+        function loadProductSelectOptions() {
+            const products = JSON.parse(localStorage.getItem('products') || '[]');
+            const productSelects = document.querySelectorAll('.product-select');
+            
+            productSelects.forEach(select => {
+                let options = '<option value="">Select Product</option>';
+                products.forEach(product => {
+                    options += `<option value="${product.id}">${product.name}</option>`;
+                });
+                select.innerHTML = options;
+            });
+            
+            // Also update purchase product selects
+            const purchaseProductSelects = document.querySelectorAll('[id^="purchase-product-"]');
+            purchaseProductSelects.forEach(select => {
+                let options = '<option value="">Select Product</option>';
+                products.forEach(product => {
+                    options += `<option value="${product.id}">${product.name}</option>`;
+                });
+                select.innerHTML = options;
+            });
+        }
+
+        function deleteProduct(id) {
+            if (confirm('Are you sure you want to delete this product?')) {
+                const products = JSON.parse(localStorage.getItem('products') || '[]');
+                const filteredProducts = products.filter(product => product.id !== id);
+                localStorage.setItem('products', JSON.stringify(filteredProducts));
+                loadProductList();
+                loadProductSelectOptions();
+            }
+        }
+
+        // Expense Form Handlers
+        document.getElementById('add-expense-btn').addEventListener('click', () => {
+            document.getElementById('add-expense-form').classList.remove('hidden');
+        });
+
+        document.getElementById('close-expense-form').addEventListener('click', () => {
+            document.getElementById('add-expense-form').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-expense').addEventListener('click', () => {
+            document.getElementById('add-expense-form').classList.add('hidden');
+        });
+
+        document.getElementById('save-expense').addEventListener('click', function() {
+            const expenseDate = document.getElementById('expense-date').value;
+            const category = document.getElementById('expense-category').value;
+            const amount = parseFloat(document.getElementById('expense-amount').value);
+            const description = document.getElementById('expense-description').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+            
+            // Validation
+            if (!expenseDate || !category || isNaN(amount) || !description || !paymentMethod) {
+                alert('Please fill in all required fields.');
+                return;
+            }
+            
+            // Create expense object
+            const newExpense = {
+                id: Date.now().toString(),
+                date: expenseDate,
+                category,
+                amount,
+                description,
+                paymentMethod,
+                createdAt: new Date().toISOString()
+            };
+            
+            // Save to localStorage
+            const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+            expenses.push(newExpense);
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+            
+            // Update expense list
+            updateExpenseList();
+            
+            // Reset form and hide
+            document.getElementById('expense-date').value = new Date().toISOString().split('T')[0];
+            document.getElementById('expense-category').value = '';
+            document.getElementById('expense-amount').value = '';
+            document.getElementById('expense-description').value = '';
+            document.getElementById('payment-method').value = '';
+            document.getElementById('expense-receipt').value = '';
+            document.getElementById('add-expense-form').classList.add('hidden');
+            
+            // Show success message
+            alert('Expense has been saved successfully.');
+        });
+
+        // Update expense list
+        function updateExpenseList() {
+            const expenseList = document.getElementById('expense-list');
+            const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+            
+            if (expenses.length === 0) {
+                expenseList.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4 text-gray-500">No expenses added yet.</td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            // Sort expenses by date (newest first)
+            expenses.sort((a, b) => new Date(b.date) - new Date(a.date));
+            
+            let html = '';
+            expenses.forEach(expense => {
+                html += `
+                    <tr>
+                        <td class="py-3 px-4">${new Date(expense.date).toLocaleDateString()}</td>
+                        <td class="py-3 px-4">${expense.category}</td>
+                        <td class="py-3 px-4">${expense.description}</td>
+                        <td class="py-3 px-4">₹${expense.amount.toFixed(2)}</td>
+                        <td class="py-3 px-4">${expense.paymentMethod}</td>
+                        <td class="py-3 px-4">${expense.receipt ? '<i class="bi bi-file-earmark"></i>' : '-'}</td>
+                        <td class="py-3 px-4">
+                            <button class="text-blue-500 hover:text-blue-700 mr-2" onclick="editExpense('${expense.id}')">
+                                <i class="bi bi-pencil"></i>
+                            </button>
+                            <button class="text-red-500 hover:text-red-700" onclick="deleteExpense('${expense.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            expenseList.innerHTML = html;
+        }
+
+        function deleteExpense(id) {
+            if (confirm('Are you sure you want to delete this expense?')) {
+                const expenses = JSON.parse(localStorage.getItem('expenses') || '[]');
+                const filteredExpenses = expenses.filter(expense => expense.id !== id);
+                localStorage.setItem('expenses', JSON.stringify(filteredExpenses));
+                updateExpenseList();
+            }
+        }
+
+        // Purchase Form Handlers
+        document.getElementById('add-purchase-btn').addEventListener('click', () => {
+            document.getElementById('add-purchase-form').classList.remove('hidden');
+        });
+
+        document.getElementById('close-purchase-form').addEventListener('click', () => {
+            document.getElementById('add-purchase-form').classList.add('hidden');
+        });
+
+        document.getElementById('cancel-purchase').addEventListener('click', () => {
+            document.getElementById('add-purchase-form').classList.add('hidden');
+        });
+
+        // Add hooks for existing product selects
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add event listeners to all existing product selects in invoice form
+            const productSelects = document.querySelectorAll('.product-select');
+            productSelects.forEach(select => {
+                select.addEventListener('change', handleProductChange);
+            });
+            
+            const itemQty = document.querySelectorAll('.item-qty');
+            itemQty.forEach(input => {
+                input.addEventListener('change', calculateItemAmount);
+            });
+            
+            const itemRate = document.querySelectorAll('.item-rate');
+            itemRate.forEach(input => {
+                input.addEventListener('change', calculateItemAmount);
+            });
+            
+            const itemDisc = document.querySelectorAll('.item-disc');
+            itemDisc.forEach(input => {
+                input.addEventListener('change', calculateItemAmount);
+            });
+            
+            const deleteItemBtns = document.querySelectorAll('.delete-item-btn');
+            deleteItemBtns.forEach(button => {
+                button.addEventListener('click', deleteItemRow);
+            });
+            
+            // Set today's date as default
+            calculateItemAmount();
+        });
+    </script>
+<script>document.body.addEventListener('wheel', e => { if (!e.ctrlKey) return; e.preventDefault(); return }, { passive: false })</script>
+	</body>
+</html>
